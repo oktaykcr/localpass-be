@@ -10,4 +10,6 @@ public interface PasswordService {
     PasswordEntity addPassword(PasswordEntity passwordEntity);
 
     PasswordEntity updatePassword(PasswordEntity passwordEntity);
+
+    Boolean deletePassword(Long id);
 }

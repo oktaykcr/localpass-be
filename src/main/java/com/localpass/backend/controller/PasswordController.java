@@ -33,4 +33,9 @@ public class PasswordController {
     public PasswordEntity updatePassword(@RequestBody PasswordEntity passwordEntity) {
         return passwordService.updatePassword(passwordEntity);
     }
+
+    @DeleteMapping("/delete")
+    public Boolean deletePassword(@RequestParam Long id) {
+        return passwordService.deletePassword(id);
+    }
 }

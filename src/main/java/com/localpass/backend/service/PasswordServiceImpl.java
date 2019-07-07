@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PasswordServiceImpl implements PasswordService  {
@@ -93,5 +94,16 @@ public class PasswordServiceImpl implements PasswordService  {
         }
 
         return repository.save(updatedPassword);
+    }
+
+    @Override
+    public Boolean deletePassword(Long id) {
+
+        Optional<PasswordEntity> foundPasswordEntity = repository.findById(id);
+        if(!foundPasswordEntity.isPresent()) {
+            return false;
+        }
+        repository.delete(foundPasswordEntity.get());
+        return true;
     }
 }
