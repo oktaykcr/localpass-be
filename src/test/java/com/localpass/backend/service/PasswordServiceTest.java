@@ -128,4 +128,34 @@ public class PasswordServiceTest {
         assertThat(listResponse.getData()).isEqualTo(mockListResponse.getData());
         assertThat(listResponse.getTotalCount()).isEqualTo(mockListResponse.getTotalCount());
     }
+
+    @Test
+    public void deletePassword_shouldDelete() {
+        PasswordEntity pe = createPasswordEntity();
+        pe.setId(1L);
+
+        Mockito.when(repository.findById(Mockito.anyLong())).thenReturn(java.util.Optional.of(pe));
+
+        Boolean result = service.deletePassword(pe.getId());
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    public void deletePassword_ShouldBeError_PasswordEntityIsNotPresent() {
+        Mockito.when(repository.findById(Mockito.anyLong())).thenReturn(null);
+
+        expectedException.expect(NullPointerException.class);
+
+        Boolean result = service.deletePassword(Mockito.anyLong());
+    }
+
+    @Test
+    public void deletePassword_ShouldBeError_IdIsNull() {
+        PasswordEntity passwordEntity = createPasswordEntity();
+        passwordEntity.setId(null);
+
+        expectedException.expect(NullPointerException.class);
+        service.deletePassword(Mockito.anyLong());
+    }
 }

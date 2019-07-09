@@ -73,7 +73,15 @@ public class PasswordControllerTest {
         mockMvc.perform(put(BASE_URL + "/update")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(passwordEntity)))
+                .andExpect(status().isOk());
+    }
 
+    @Test
+    public void deletePassword_HttpStatusShouldOk() throws Exception {
+        PasswordEntity passwordEntity = createPassword();
+        passwordEntity.setId(1L);
+        mockMvc.perform(delete(BASE_URL + "/delete").param("id", passwordEntity.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 

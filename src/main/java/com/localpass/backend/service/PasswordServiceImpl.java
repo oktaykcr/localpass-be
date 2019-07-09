@@ -98,12 +98,18 @@ public class PasswordServiceImpl implements PasswordService  {
 
     @Override
     public Boolean deletePassword(Long id) {
-
-        Optional<PasswordEntity> foundPasswordEntity = repository.findById(id);
-        if(!foundPasswordEntity.isPresent()) {
-            return false;
+        if(id == null) {
+            //MANDATORY
+            throw new NullPointerException();
         }
-        repository.delete(foundPasswordEntity.get());
+        Optional<PasswordEntity> passwordEntity = repository.findById(id);
+
+        if(!passwordEntity.isPresent()) {
+            //NOT FOUND
+            throw new NullPointerException();
+        }
+
+        repository.deleteById(id);
         return true;
     }
 }
