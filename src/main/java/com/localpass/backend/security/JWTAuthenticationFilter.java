@@ -1,11 +1,12 @@
 package com.localpass.backend.security;
 
+import com.localpass.backend.exception.ExceptionEnum;
+import com.localpass.backend.exception.ExceptionFactory;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -30,18 +31,16 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     }
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
 
         if(username == null) {
-            // TODO: ADD EXCEPTION
-            throw new NullPointerException();
+            throw ExceptionFactory.getApiError(ExceptionEnum.BAD_REQUEST, "username");
         }
 
         if(password == null) {
-            // TODO: ADD EXCEPTION
-            throw new NullPointerException();
+            throw ExceptionFactory.getApiError(ExceptionEnum.BAD_REQUEST, "password");
         }
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(username, password);

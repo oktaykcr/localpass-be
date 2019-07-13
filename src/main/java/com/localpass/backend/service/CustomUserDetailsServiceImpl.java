@@ -1,9 +1,12 @@
 package com.localpass.backend.service;
 
+import com.localpass.backend.exception.ExceptionEnum;
+import com.localpass.backend.exception.ExceptionFactory;
 import com.localpass.backend.model.user.Role;
 import com.localpass.backend.model.user.RoleEnum;
 import com.localpass.backend.model.user.User;
 import com.localpass.backend.repository.UserRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -34,13 +37,20 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username);
         if(user == null) {
-            throw new UsernameNotFoundException("login failed");
-            // TODO: USER NOT FOUND EXCEPTION
+            throw ExceptionFactory.getApiError(ExceptionEnum.LOGIN_FAILURE);
         }
         return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), getAuthorities(user));
     }
 
     public User save(User user){
+        if(StringUtils.isEmpty(user.getUsername())) {
+            throw ExceptionFactory.getApiError(ExceptionEnum.BAD_REQUEST, "username");
+        }
+
+        if(StringUtils.isEmpty(user.getPassword())) {
+            throw ExceptionFactory.getApiError(ExceptionEnum.BAD_REQUEST, "password");
+        }
+
         User registeredUser = new User();
         registeredUser.setUsername(user.getUsername());
         registeredUser.setPassword(passwordEncoder.encode(user.getPassword()));

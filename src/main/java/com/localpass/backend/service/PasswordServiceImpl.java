@@ -1,8 +1,11 @@
 package com.localpass.backend.service;
 
 import com.localpass.backend.common.model.ListResponse;
+import com.localpass.backend.exception.ExceptionEnum;
+import com.localpass.backend.exception.ExceptionFactory;
 import com.localpass.backend.model.password.PasswordEntity;
 import com.localpass.backend.repository.PasswordRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,20 +35,20 @@ public class PasswordServiceImpl implements PasswordService  {
     @Override
     public PasswordEntity addPassword(PasswordEntity passwordEntity) {
 
-        if(passwordEntity.getName() == null) {
-            throw new NullPointerException();
+        if(StringUtils.isEmpty(passwordEntity.getName())) {
+            throw ExceptionFactory.getApiError(ExceptionEnum.BAD_REQUEST, "name");
         }
 
-        if(passwordEntity.getUsername() == null) {
-            throw new NullPointerException();
+        if(StringUtils.isEmpty(passwordEntity.getUsername())) {
+            throw ExceptionFactory.getApiError(ExceptionEnum.BAD_REQUEST, "username");
         }
 
-        if(passwordEntity.getPassword() == null) {
-            throw new NullPointerException();
+        if(StringUtils.isEmpty(passwordEntity.getPassword())) {
+            throw ExceptionFactory.getApiError(ExceptionEnum.BAD_REQUEST, "password");
         }
 
-        if(passwordEntity.getEmail() == null) {
-            throw new NullPointerException();
+        if(StringUtils.isEmpty(passwordEntity.getEmail())) {
+            throw ExceptionFactory.getApiError(ExceptionEnum.BAD_REQUEST, "email");
         }
 
         PasswordEntity savedPassword = repository.save(passwordEntity);
@@ -56,40 +59,33 @@ public class PasswordServiceImpl implements PasswordService  {
     @Override
     public PasswordEntity updatePassword(PasswordEntity passwordEntity) {
 
-        if(passwordEntity == null) {
-            // BAD REQUEST
-            throw new NullPointerException();
-        }
-
         if(passwordEntity.getId() == null) {
-            // BAD REQUEST
-            throw new NullPointerException();
+            throw ExceptionFactory.getApiError(ExceptionEnum.BAD_REQUEST, "id");
         }
 
         PasswordEntity updatedPassword = repository.getOne(passwordEntity.getId());
 
         if(updatedPassword == null) {
-            // NOT FOUND
-            throw new NullPointerException();
+            throw ExceptionFactory.getApiError(ExceptionEnum.NOT_FOUND, "password");
         }
 
-        if(passwordEntity.getName() != null) {
+        if(StringUtils.isNotEmpty(passwordEntity.getName())) {
             updatedPassword.setName(passwordEntity.getName());
         }
 
-        if(passwordEntity.getEmail() != null) {
+        if(StringUtils.isNotEmpty(passwordEntity.getEmail())) {
             updatedPassword.setEmail(passwordEntity.getEmail());
         }
 
-        if(passwordEntity.getUsername() != null) {
+        if(StringUtils.isNotEmpty(passwordEntity.getUsername())) {
             updatedPassword.setUsername(passwordEntity.getUsername());
         }
 
-        if(passwordEntity.getPassword() != null) {
+        if(StringUtils.isNotEmpty(passwordEntity.getPassword())) {
             updatedPassword.setPassword(passwordEntity.getPassword());
         }
 
-        if(passwordEntity.getDescription() != null) {
+        if(StringUtils.isNotEmpty(passwordEntity.getDescription())) {
             updatedPassword.setDescription(passwordEntity.getDescription());
         }
 
@@ -99,14 +95,12 @@ public class PasswordServiceImpl implements PasswordService  {
     @Override
     public Boolean deletePassword(Long id) {
         if(id == null) {
-            //MANDATORY
-            throw new NullPointerException();
+            throw ExceptionFactory.getApiError(ExceptionEnum.BAD_REQUEST, "id");
         }
         Optional<PasswordEntity> passwordEntity = repository.findById(id);
 
         if(!passwordEntity.isPresent()) {
-            //NOT FOUND
-            throw new NullPointerException();
+            throw ExceptionFactory.getApiError(ExceptionEnum.BAD_REQUEST, "password");
         }
 
         repository.deleteById(id);
