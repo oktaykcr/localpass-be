@@ -19,6 +19,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+
+import static com.localpass.backend.security.SecurityConstants.HEADER_STRING;
 import static com.localpass.backend.security.SecurityConstants.SIGN_UP_URL;
 
 @Configuration
@@ -67,6 +70,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.addAllowedOrigin("http://localhost:8080");
         corsConfiguration.setMaxAge(3600l);
+        corsConfiguration.setExposedHeaders(Arrays.asList(HEADER_STRING));// otherwise can not get from client
         corsConfiguration.applyPermitDefaultValues();
 
         source.registerCorsConfiguration("/**", corsConfiguration);
