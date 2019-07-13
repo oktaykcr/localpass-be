@@ -1,13 +1,11 @@
 package com.localpass.backend.controller;
 
 import com.localpass.backend.common.model.ListResponse;
-import com.localpass.backend.model.PasswordEntity;
+import com.localpass.backend.model.password.PasswordEntity;
 import com.localpass.backend.service.PasswordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-
-@CrossOrigin(origins = "http://localhost:8080", maxAge = 3600)
 @RestController
 @RequestMapping("/api/v1/password")
 public class PasswordController {

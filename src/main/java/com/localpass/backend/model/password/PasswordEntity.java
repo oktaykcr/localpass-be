@@ -1,4 +1,4 @@
-package com.localpass.backend.model;
+package com.localpass.backend.model.password;
 
 import javax.persistence.*;
 

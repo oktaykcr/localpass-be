@@ -1,7 +1,7 @@
 package com.localpass.backend.service;
 
 import com.localpass.backend.common.model.ListResponse;
-import com.localpass.backend.model.PasswordEntity;
+import com.localpass.backend.model.password.PasswordEntity;
 import com.localpass.backend.repository.PasswordRepository;
 import org.junit.Rule;
 import org.junit.Test;

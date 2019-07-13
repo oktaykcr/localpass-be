@@ -1,7 +1,7 @@
 package com.localpass.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.localpass.backend.model.PasswordEntity;
+import com.localpass.backend.model.password.PasswordEntity;
 import com.localpass.backend.service.PasswordService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,8 +18,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(PasswordController.class)
