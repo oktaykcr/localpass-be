@@ -2,6 +2,7 @@ package com.localpass.backend.controller;
 
 import com.localpass.backend.common.model.ListResponse;
 import com.localpass.backend.model.password.PasswordEntity;
+import com.localpass.backend.model.password.PasswordEntityRequest;
 import com.localpass.backend.service.PasswordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -18,13 +19,13 @@ public class PasswordController {
     }
 
     @GetMapping("/list")
-    public ListResponse listPasswords() {
-        return passwordService.listPasswords();
+    public ListResponse listPasswords(String username) {
+        return passwordService.listPasswords(username);
     }
 
     @PostMapping("/save")
-    public PasswordEntity savePassword(@RequestBody PasswordEntity passwordEntity) {
-        return passwordService.addPassword(passwordEntity);
+    public PasswordEntity savePassword(@RequestBody PasswordEntityRequest request) {
+        return passwordService.addPassword(request);
     }
 
     @PutMapping("/update")

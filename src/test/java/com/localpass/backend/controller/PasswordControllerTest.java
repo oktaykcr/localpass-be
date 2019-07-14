@@ -6,7 +6,9 @@ import com.localpass.backend.service.PasswordService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -20,7 +22,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(PasswordController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 public class PasswordControllerTest {
 
     private final String BASE_URL = "/api/v1/password";
@@ -50,7 +53,7 @@ public class PasswordControllerTest {
 
     @Test
     public void listPasswords_HttpStatusShouldOk() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/list"))
+        mockMvc.perform(get(BASE_URL + "/list").param("username", "username"))
                 .andExpect(status().isOk());
     }
 

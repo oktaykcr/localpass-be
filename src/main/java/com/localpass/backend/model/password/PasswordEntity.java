@@ -1,5 +1,8 @@
 package com.localpass.backend.model.password;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.localpass.backend.model.user.User;
+
 import javax.persistence.*;
 
 @Entity
@@ -14,6 +17,11 @@ public class PasswordEntity {
     private String password;
     private String email;
     private String description;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
+    private User user;
 
     public PasswordEntity() {
     }
@@ -72,6 +80,14 @@ public class PasswordEntity {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     @Override

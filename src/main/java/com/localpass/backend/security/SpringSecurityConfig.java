@@ -47,6 +47,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .authorizeRequests()
                 .antMatchers(HttpMethod.POST, SIGN_UP_URL).permitAll()
+                .antMatchers("/h2-console/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .exceptionHandling().authenticationEntryPoint(new RestAuthenticationEntryPoint())
@@ -55,6 +56,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilter(new JWTAuthorizationFilter(authenticationManager()))
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+        http.headers().frameOptions().disable();
     }
 
     @Bean
@@ -70,6 +73,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         corsConfiguration.addAllowedOrigin("http://localhost:8080");
         corsConfiguration.setMaxAge(3600l);
         corsConfiguration.setExposedHeaders(Arrays.asList(HEADER_TOKEN, HEADER_USERNAME));// otherwise can not get from client
+        corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE", "PUT"));
         corsConfiguration.applyPermitDefaultValues();
 
         source.registerCorsConfiguration("/**", corsConfiguration);

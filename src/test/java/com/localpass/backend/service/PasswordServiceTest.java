@@ -1,8 +1,15 @@
 package com.localpass.backend.service;
 
 import com.localpass.backend.common.model.ListResponse;
+import com.localpass.backend.exception.ApiError;
+import com.localpass.backend.exception.ExceptionEnum;
 import com.localpass.backend.model.password.PasswordEntity;
+import com.localpass.backend.model.password.PasswordEntityRequest;
+import com.localpass.backend.model.user.Role;
+import com.localpass.backend.model.user.User;
 import com.localpass.backend.repository.PasswordRepository;
+import com.localpass.backend.repository.UserRepository;
+import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -12,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
+import sun.nio.cs.US_ASCII;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,7 +31,10 @@ import static org.assertj.core.api.Assertions.*;
 public class PasswordServiceTest {
 
     @MockBean
-    private PasswordRepository repository;
+    private PasswordRepository passwordRepository;
+
+    @MockBean
+    private UserRepository userRepository;
 
     @Autowired
     private PasswordService service;
@@ -43,57 +54,95 @@ public class PasswordServiceTest {
         return password;
     }
 
+    private PasswordEntityRequest createPasswordEntityRequest() {
+        PasswordEntityRequest request = new PasswordEntityRequest();
+        request.setPasswordEntity(createPasswordEntity());
+        request.setUsername("username");
+
+        return request;
+    }
+
+
+    private User createUser() {
+        User user = new User();
+        user.setUsername("username");
+        user.setEnabled(true);
+        user.setPassword("password");
+        user.setId(1L);
+        user.setRoles(Arrays.asList(new Role("USER")));
+        return user;
+    }
+
     @Test
     public void addPassword_shouldAddPassword() {
-        PasswordEntity mockPasswordEntity = createPasswordEntity();
+        PasswordEntityRequest request = createPasswordEntityRequest();
+        User mockUser = createUser();
 
-        Mockito.when(repository.save(mockPasswordEntity)).thenReturn(mockPasswordEntity);
+        Mockito.when(userRepository.findByUsername(request.getUsername())).thenReturn(mockUser);
+        Mockito.when(passwordRepository.save(request.getPasswordEntity())).thenReturn(request.getPasswordEntity());
 
-        PasswordEntity addedPasswordEntity = service.addPassword(mockPasswordEntity);
+        PasswordEntity addedPasswordEntity = service.addPassword(request);
 
-        assertThat(addedPasswordEntity).isEqualTo(mockPasswordEntity);
+        assertThat(addedPasswordEntity).isEqualTo(request.getPasswordEntity());
     }
 
     @Test
     public void addPassword_shouldThrowException_passwordNameIsNull() {
-        PasswordEntity mockPasswordEntity = createPasswordEntity();
-        mockPasswordEntity.setName(null);
+        PasswordEntityRequest request = createPasswordEntityRequest();
+        request.getPasswordEntity().setName(null);
 
-        expectedException.expect(NullPointerException.class);
+        expectedException.expect(ApiError.class);
+        expectedException.expectMessage(CoreMatchers.equalTo(ExceptionEnum.BAD_REQUEST.getErrorCode()));
 
-        service.addPassword(mockPasswordEntity);
+        service.addPassword(request);
     }
 
 
     @Test
     public void addPassword_shouldThrowException_usernameIsNull() {
-        PasswordEntity mockPasswordEntity = createPasswordEntity();
-        mockPasswordEntity.setUsername(null);
+        PasswordEntityRequest request = createPasswordEntityRequest();
+        request.getPasswordEntity().setUsername(null);
 
-        expectedException.expect(NullPointerException.class);
+        expectedException.expect(ApiError.class);
+        expectedException.expectMessage(CoreMatchers.equalTo(ExceptionEnum.BAD_REQUEST.getErrorCode()));
 
-        service.addPassword(mockPasswordEntity);
+        service.addPassword(request);
     }
 
 
     @Test
     public void addPassword_shouldThrowException_passwordIsNull() {
-        PasswordEntity mockPasswordEntity = createPasswordEntity();
-        mockPasswordEntity.setPassword(null);
+        PasswordEntityRequest request = createPasswordEntityRequest();
+        request.getPasswordEntity().setPassword(null);
 
-        expectedException.expect(NullPointerException.class);
+        expectedException.expect(ApiError.class);
+        expectedException.expectMessage(CoreMatchers.equalTo(ExceptionEnum.BAD_REQUEST.getErrorCode()));
 
-        service.addPassword(mockPasswordEntity);
+        service.addPassword(request);
     }
 
     @Test
     public void addPassword_shouldThrowException_emailIsNull() {
-        PasswordEntity mockPasswordEntity = createPasswordEntity();
-        mockPasswordEntity.setEmail(null);
+        PasswordEntityRequest request = createPasswordEntityRequest();
+        request.getPasswordEntity().setEmail(null);
 
-        expectedException.expect(NullPointerException.class);
+        expectedException.expect(ApiError.class);
+        expectedException.expectMessage(CoreMatchers.equalTo(ExceptionEnum.BAD_REQUEST.getErrorCode()));
 
-        service.addPassword(mockPasswordEntity);
+        service.addPassword(request);
+    }
+
+    @Test
+    public void addPassword_shouldBeError_userNotFound() {
+        PasswordEntityRequest request = createPasswordEntityRequest();
+
+        Mockito.when(userRepository.findByUsername(request.getUsername())).thenReturn(null);
+        Mockito.when(passwordRepository.save(request.getPasswordEntity())).thenReturn(request.getPasswordEntity());
+
+        expectedException.expect(ApiError.class);
+        expectedException.expectMessage(CoreMatchers.equalTo(ExceptionEnum.NOT_FOUND.getErrorCode()));
+
+        service.addPassword(request);
     }
 
     @Test
@@ -101,12 +150,36 @@ public class PasswordServiceTest {
         PasswordEntity passwordEntity = createPasswordEntity();
         passwordEntity.setId(1l);
 
-        Mockito.when(repository.getOne(Mockito.anyLong())).thenReturn(passwordEntity);
-        Mockito.when(repository.save(passwordEntity)).thenReturn(passwordEntity);
+        Mockito.when(passwordRepository.getOne(Mockito.anyLong())).thenReturn(passwordEntity);
+        Mockito.when(passwordRepository.save(passwordEntity)).thenReturn(passwordEntity);
 
         PasswordEntity updatedPassword = service.updatePassword(passwordEntity);
 
         assertThat(updatedPassword.getName()).isEqualTo(passwordEntity.getName());
+    }
+
+    @Test
+    public void updatePassword_shouldBeError_userIdIsNull() {
+        PasswordEntity passwordEntity = createPasswordEntity();
+        passwordEntity.setId(null);
+
+        expectedException.expect(ApiError.class);
+        expectedException.expectMessage(CoreMatchers.equalTo(ExceptionEnum.BAD_REQUEST.getErrorCode()));
+
+        service.updatePassword(passwordEntity);
+    }
+
+    @Test
+    public void updatePassword_shouldBeError_passwordNotFound() {
+        PasswordEntity passwordEntity = createPasswordEntity();
+        passwordEntity.setId(1l);
+
+        Mockito.when(passwordRepository.getOne(passwordEntity.getId())).thenReturn(null);
+
+        expectedException.expect(ApiError.class);
+        expectedException.expectMessage(CoreMatchers.equalTo(ExceptionEnum.NOT_FOUND.getErrorCode()));
+
+        service.updatePassword(passwordEntity);
     }
 
     @Test
@@ -117,16 +190,40 @@ public class PasswordServiceTest {
         pe2.setId(2l);
         List<PasswordEntity> passwords = Arrays.asList(pe1, pe2);
 
+        User mockUser = createUser();
+
         ListResponse mockListResponse = new ListResponse();
         mockListResponse.setData(passwords);
         mockListResponse.setTotalCount(passwords.size());
 
-        Mockito.when(repository.findAll()).thenReturn(passwords);
+        Mockito.when(userRepository.findByUsername(mockUser.getUsername())).thenReturn(mockUser);
+        Mockito.when(passwordRepository.findByUserId(mockUser.getId())).thenReturn(passwords);
 
-        ListResponse listResponse = service.listPasswords();
+        ListResponse listResponse = service.listPasswords(mockUser.getUsername());
 
         assertThat(listResponse.getData()).isEqualTo(mockListResponse.getData());
         assertThat(listResponse.getTotalCount()).isEqualTo(mockListResponse.getTotalCount());
+    }
+
+    @Test
+    public void listPassword_shouldBeError_userNotFound() {
+
+        User user = createUser();
+
+        Mockito.when(userRepository.findByUsername(user.getUsername())).thenReturn(null);
+
+        expectedException.expect(ApiError.class);
+        expectedException.expectMessage(CoreMatchers.equalTo(ExceptionEnum.NOT_FOUND.getErrorCode()));
+
+        service.listPasswords(user.getUsername());
+    }
+
+    @Test
+    public void listPassword_shouldBeError_usernameIsNull() {
+        expectedException.expect(ApiError.class);
+        expectedException.expectMessage(CoreMatchers.equalTo(ExceptionEnum.BAD_REQUEST.getErrorCode()));
+
+        service.listPasswords(null);
     }
 
     @Test
@@ -134,7 +231,7 @@ public class PasswordServiceTest {
         PasswordEntity pe = createPasswordEntity();
         pe.setId(1L);
 
-        Mockito.when(repository.findById(Mockito.anyLong())).thenReturn(java.util.Optional.of(pe));
+        Mockito.when(passwordRepository.findById(Mockito.anyLong())).thenReturn(java.util.Optional.of(pe));
 
         Boolean result = service.deletePassword(pe.getId());
 
@@ -142,20 +239,9 @@ public class PasswordServiceTest {
     }
 
     @Test
-    public void deletePassword_ShouldBeError_PasswordEntityIsNotPresent() {
-        Mockito.when(repository.findById(Mockito.anyLong())).thenReturn(null);
-
-        expectedException.expect(NullPointerException.class);
-
-        Boolean result = service.deletePassword(Mockito.anyLong());
-    }
-
-    @Test
     public void deletePassword_ShouldBeError_IdIsNull() {
-        PasswordEntity passwordEntity = createPasswordEntity();
-        passwordEntity.setId(null);
-
-        expectedException.expect(NullPointerException.class);
-        service.deletePassword(Mockito.anyLong());
+        expectedException.expect(ApiError.class);
+        expectedException.expectMessage(CoreMatchers.equalTo(ExceptionEnum.BAD_REQUEST.getErrorCode()));
+        service.deletePassword(null);
     }
 }
