@@ -65,7 +65,8 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .claim("rol", roles)
                 .compact();
 
-        response.addHeader(HEADER_STRING, TOKEN_PREFIX + token);
+        response.addHeader(HEADER_TOKEN, TOKEN_PREFIX + token);
+        response.addHeader(HEADER_USERNAME, user.getUsername());
     }
 
 }
