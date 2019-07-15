@@ -68,7 +68,7 @@ public class PasswordServiceTest {
         user.setUsername("username");
         user.setEnabled(true);
         user.setPassword("password");
-        user.setId(1L);
+        user.setId("id");
         user.setRoles(Arrays.asList(new Role("USER")));
         return user;
     }
@@ -148,9 +148,9 @@ public class PasswordServiceTest {
     @Test
     public void updatePassword_shouldUpdatePassword() {
         PasswordEntity passwordEntity = createPasswordEntity();
-        passwordEntity.setId(1l);
+        passwordEntity.setId("id");
 
-        Mockito.when(passwordRepository.getOne(Mockito.anyLong())).thenReturn(passwordEntity);
+        Mockito.when(passwordRepository.getOne(Mockito.anyString())).thenReturn(passwordEntity);
         Mockito.when(passwordRepository.save(passwordEntity)).thenReturn(passwordEntity);
 
         PasswordEntity updatedPassword = service.updatePassword(passwordEntity);
@@ -172,7 +172,7 @@ public class PasswordServiceTest {
     @Test
     public void updatePassword_shouldBeError_passwordNotFound() {
         PasswordEntity passwordEntity = createPasswordEntity();
-        passwordEntity.setId(1l);
+        passwordEntity.setId("id");
 
         Mockito.when(passwordRepository.getOne(passwordEntity.getId())).thenReturn(null);
 
@@ -185,9 +185,9 @@ public class PasswordServiceTest {
     @Test
     public void listPasswords_shouldListPasswords() {
         PasswordEntity pe1 = createPasswordEntity();
-        pe1.setId(1l);
+        pe1.setId("id");
         PasswordEntity pe2 = createPasswordEntity();
-        pe2.setId(2l);
+        pe2.setId("id2");
         List<PasswordEntity> passwords = Arrays.asList(pe1, pe2);
 
         User mockUser = createUser();
@@ -229,9 +229,9 @@ public class PasswordServiceTest {
     @Test
     public void deletePassword_shouldDelete() {
         PasswordEntity pe = createPasswordEntity();
-        pe.setId(1L);
+        pe.setId("id");
 
-        Mockito.when(passwordRepository.findById(Mockito.anyLong())).thenReturn(java.util.Optional.of(pe));
+        Mockito.when(passwordRepository.findById(Mockito.anyString())).thenReturn(java.util.Optional.of(pe));
 
         Boolean result = service.deletePassword(pe.getId());
 

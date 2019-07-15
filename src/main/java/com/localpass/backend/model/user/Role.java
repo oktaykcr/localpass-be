@@ -1,5 +1,7 @@
 package com.localpass.backend.model.user;
 
+import org.hibernate.annotations.GenericGenerator;
+
 import javax.persistence.*;
 import java.util.List;
 
@@ -7,8 +9,10 @@ import java.util.List;
 public class Role {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    @GeneratedValue(generator = "uuid")
+    @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "id", columnDefinition = "VARCHAR(255)")
+    private String id;
 
     private String role;
 
@@ -22,11 +26,11 @@ public class Role {
         this.role = role;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

@@ -117,7 +117,7 @@ public class PasswordServiceImpl implements PasswordService  {
     }
 
     @Override
-    public Boolean deletePassword(Long id) {
+    public Boolean deletePassword(String id) {
         if(id == null) {
             throw ExceptionFactory.getApiError(ExceptionEnum.BAD_REQUEST, "id");
         }

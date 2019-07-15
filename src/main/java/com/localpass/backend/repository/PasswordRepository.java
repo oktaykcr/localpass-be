@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface PasswordRepository extends JpaRepository<PasswordEntity, Long> {
-    List<PasswordEntity> findByUserId(Long userId);
-    PasswordEntity findByIdAndUserId(Long id, Long userId);
+public interface PasswordRepository extends JpaRepository<PasswordEntity, String> {
+    List<PasswordEntity> findByUserId(String userId);
+    PasswordEntity findByIdAndUserId(String id, Long userId);
 }

@@ -2,6 +2,7 @@ package com.localpass.backend.model.password;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.localpass.backend.model.user.User;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 
@@ -9,8 +10,10 @@ import javax.persistence.*;
 public class PasswordEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(generator = "uuid")
+    @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "id", columnDefinition = "VARCHAR(255)")
+    private String id;
 
     private String name;
     private String username;
@@ -34,11 +37,11 @@ public class PasswordEntity {
         this.description = description;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

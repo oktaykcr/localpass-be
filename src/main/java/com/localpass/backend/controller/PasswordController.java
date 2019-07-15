@@ -34,7 +34,7 @@ public class PasswordController {
     }
 
     @DeleteMapping("/delete")
-    public Boolean deletePassword(@RequestParam Long id) {
+    public Boolean deletePassword(@RequestParam String id) {
         return passwordService.deletePassword(id);
     }
 }

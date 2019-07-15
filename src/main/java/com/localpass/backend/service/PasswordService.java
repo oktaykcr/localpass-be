@@ -12,5 +12,5 @@ public interface PasswordService {
 
     PasswordEntity updatePassword(PasswordEntity passwordEntity);
 
-    Boolean deletePassword(Long id);
+    Boolean deletePassword(String id);
 }
