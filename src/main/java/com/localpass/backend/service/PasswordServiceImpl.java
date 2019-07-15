@@ -1,6 +1,7 @@
 package com.localpass.backend.service;
 
 import com.localpass.backend.common.model.ListResponse;
+import com.localpass.backend.common.util.AES;
 import com.localpass.backend.exception.ExceptionEnum;
 import com.localpass.backend.exception.ExceptionFactory;
 import com.localpass.backend.model.password.PasswordEntity;
@@ -12,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,7 +44,13 @@ public class PasswordServiceImpl implements PasswordService  {
 
         ListResponse listResponse = new ListResponse();
         List<PasswordEntity> passwordList = passwordRepository.findByUserId(user.getId());
-        listResponse.setData(passwordList);
+        List<PasswordEntity> decryptedPasswordList = new ArrayList<>();
+        for(PasswordEntity entity : passwordList) {
+            decryptedPasswordList.add(decryptPasswordEntity(entity, username));
+        }
+
+
+        listResponse.setData(decryptedPasswordList);
         listResponse.setTotalCount(passwordList.size());
 
         return listResponse;
@@ -75,9 +83,9 @@ public class PasswordServiceImpl implements PasswordService  {
         }
         passwordEntity.setUser(user);
 
-        PasswordEntity savedPassword = passwordRepository.save(passwordEntity);
+        PasswordEntity encryptedPasswordEntity = encryptPasswordEntity(passwordEntity, request.getUsername());
 
-        return savedPassword;
+        return passwordRepository.save(encryptedPasswordEntity);
     }
 
     @Override
@@ -93,24 +101,27 @@ public class PasswordServiceImpl implements PasswordService  {
             throw ExceptionFactory.getApiError(ExceptionEnum.NOT_FOUND, "password");
         }
 
+        String username = updatedPassword.getUser().getUsername();
+        String secret = username + "_secret";
+
         if(StringUtils.isNotEmpty(passwordEntity.getName())) {
-            updatedPassword.setName(passwordEntity.getName());
+            updatedPassword.setName(AES.encrypt(passwordEntity.getName(), secret));
         }
 
         if(StringUtils.isNotEmpty(passwordEntity.getEmail())) {
-            updatedPassword.setEmail(passwordEntity.getEmail());
+            updatedPassword.setEmail(AES.encrypt(passwordEntity.getEmail(), secret));
         }
 
         if(StringUtils.isNotEmpty(passwordEntity.getUsername())) {
-            updatedPassword.setUsername(passwordEntity.getUsername());
+            updatedPassword.setUsername(AES.encrypt(passwordEntity.getUsername(), secret));
         }
 
         if(StringUtils.isNotEmpty(passwordEntity.getPassword())) {
-            updatedPassword.setPassword(passwordEntity.getPassword());
+            updatedPassword.setPassword(AES.encrypt(passwordEntity.getPassword(), secret));
         }
 
         if(StringUtils.isNotEmpty(passwordEntity.getDescription())) {
-            updatedPassword.setDescription(passwordEntity.getDescription());
+            updatedPassword.setDescription(AES.encrypt(passwordEntity.getDescription(), secret));
         }
 
         return passwordRepository.save(updatedPassword);
@@ -129,5 +140,32 @@ public class PasswordServiceImpl implements PasswordService  {
 
         passwordRepository.deleteById(id);
         return true;
+    }
+
+    private PasswordEntity encryptPasswordEntity(PasswordEntity passwordEntity, String username) {
+        String secret = username + "_secret";
+        PasswordEntity encryptedPasswordEntity = new PasswordEntity();
+        encryptedPasswordEntity.setName(AES.encrypt(passwordEntity.getName(), secret));
+        encryptedPasswordEntity.setUsername(AES.encrypt(passwordEntity.getUsername(), secret));
+        encryptedPasswordEntity.setPassword(AES.encrypt(passwordEntity.getPassword(), secret));
+        encryptedPasswordEntity.setEmail(AES.encrypt(passwordEntity.getEmail(), secret));
+        encryptedPasswordEntity.setDescription(AES.encrypt(passwordEntity.getDescription(), secret));
+        encryptedPasswordEntity.setUser(passwordEntity.getUser());
+
+        return encryptedPasswordEntity;
+    }
+
+    private PasswordEntity decryptPasswordEntity(PasswordEntity passwordEntity, String username) {
+        String secret = username + "_secret";
+        PasswordEntity decryptedPasswordEntity = new PasswordEntity();
+        decryptedPasswordEntity.setName(AES.decrypt(passwordEntity.getName(), secret));
+        decryptedPasswordEntity.setUsername(AES.decrypt(passwordEntity.getUsername(), secret));
+        decryptedPasswordEntity.setPassword(AES.decrypt(passwordEntity.getPassword(), secret));
+        decryptedPasswordEntity.setEmail(AES.decrypt(passwordEntity.getEmail(), secret));
+        decryptedPasswordEntity.setDescription(AES.decrypt(passwordEntity.getDescription(), secret));
+        decryptedPasswordEntity.setUser(passwordEntity.getUser());
+        decryptedPasswordEntity.setId(passwordEntity.getId());
+
+        return decryptedPasswordEntity;
     }
 }
