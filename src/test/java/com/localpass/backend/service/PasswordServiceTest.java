@@ -1,6 +1,7 @@
 package com.localpass.backend.service;
 
 import com.localpass.backend.common.model.ListResponse;
+import com.localpass.backend.common.util.AES;
 import com.localpass.backend.exception.ApiError;
 import com.localpass.backend.exception.ExceptionEnum;
 import com.localpass.backend.model.password.PasswordEntity;
@@ -19,8 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
-import sun.nio.cs.US_ASCII;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -79,11 +80,14 @@ public class PasswordServiceTest {
         User mockUser = createUser();
 
         Mockito.when(userRepository.findByUsername(request.getUsername())).thenReturn(mockUser);
-        Mockito.when(passwordRepository.save(request.getPasswordEntity())).thenReturn(request.getPasswordEntity());
+
+        PasswordEntity expectedPasswordEntity = encryptPasswordEntity(request.getPasswordEntity(), request.getUsername());
+        expectedPasswordEntity.setUser(mockUser);
+        Mockito.when(passwordRepository.save(Mockito.any())).thenReturn(expectedPasswordEntity);
 
         PasswordEntity addedPasswordEntity = service.addPassword(request);
 
-        assertThat(addedPasswordEntity).isEqualTo(request.getPasswordEntity());
+        assertThat(addedPasswordEntity).isEqualTo(expectedPasswordEntity);
     }
 
     @Test
@@ -150,8 +154,12 @@ public class PasswordServiceTest {
         PasswordEntity passwordEntity = createPasswordEntity();
         passwordEntity.setId("id");
 
+        User user = createUser();
+
+        passwordEntity.setUser(user);
+
         Mockito.when(passwordRepository.getOne(Mockito.anyString())).thenReturn(passwordEntity);
-        Mockito.when(passwordRepository.save(passwordEntity)).thenReturn(passwordEntity);
+        Mockito.when(passwordRepository.save(Mockito.any())).thenReturn(passwordEntity);
 
         PasswordEntity updatedPassword = service.updatePassword(passwordEntity);
 
@@ -192,16 +200,22 @@ public class PasswordServiceTest {
 
         User mockUser = createUser();
 
-        ListResponse mockListResponse = new ListResponse();
-        mockListResponse.setData(passwords);
-        mockListResponse.setTotalCount(passwords.size());
+        List<PasswordEntity> expectedPasswordList = new ArrayList<>();
+        for (PasswordEntity entity : passwords) {
+            expectedPasswordList.add(decryptPasswordEntity(entity, mockUser.getUsername()));
+        }
 
-        Mockito.when(userRepository.findByUsername(mockUser.getUsername())).thenReturn(mockUser);
-        Mockito.when(passwordRepository.findByUserId(mockUser.getId())).thenReturn(passwords);
+        ListResponse mockListResponse = new ListResponse();
+        mockListResponse.setData(expectedPasswordList);
+        mockListResponse.setTotalCount(expectedPasswordList.size());
+
+        Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(mockUser);
+        Mockito.when(passwordRepository.findByUserId(Mockito.anyString())).thenReturn(passwords);
 
         ListResponse listResponse = service.listPasswords(mockUser.getUsername());
 
-        assertThat(listResponse.getData()).isEqualTo(mockListResponse.getData());
+        assertThat(((PasswordEntity) listResponse.getData().get(0)).getName()).isEqualTo(((PasswordEntity) mockListResponse.getData().get(0)).getName());
+        assertThat(((PasswordEntity) listResponse.getData().get(1)).getName()).isEqualTo(((PasswordEntity) mockListResponse.getData().get(1)).getName());
         assertThat(listResponse.getTotalCount()).isEqualTo(mockListResponse.getTotalCount());
     }
 
@@ -243,5 +257,32 @@ public class PasswordServiceTest {
         expectedException.expect(ApiError.class);
         expectedException.expectMessage(CoreMatchers.equalTo(ExceptionEnum.BAD_REQUEST.getErrorCode()));
         service.deletePassword(null);
+    }
+
+    private PasswordEntity encryptPasswordEntity(PasswordEntity passwordEntity, String username) {
+        String secret = username + "_secret";
+        PasswordEntity encryptedPasswordEntity = new PasswordEntity();
+        encryptedPasswordEntity.setName(AES.encrypt(passwordEntity.getName(), secret));
+        encryptedPasswordEntity.setUsername(AES.encrypt(passwordEntity.getUsername(), secret));
+        encryptedPasswordEntity.setPassword(AES.encrypt(passwordEntity.getPassword(), secret));
+        encryptedPasswordEntity.setEmail(AES.encrypt(passwordEntity.getEmail(), secret));
+        encryptedPasswordEntity.setDescription(AES.encrypt(passwordEntity.getDescription(), secret));
+        encryptedPasswordEntity.setUser(passwordEntity.getUser());
+
+        return encryptedPasswordEntity;
+    }
+
+    private PasswordEntity decryptPasswordEntity(PasswordEntity passwordEntity, String username) {
+        String secret = username + "_secret";
+        PasswordEntity decryptedPasswordEntity = new PasswordEntity();
+        decryptedPasswordEntity.setName(AES.decrypt(passwordEntity.getName(), secret));
+        decryptedPasswordEntity.setUsername(AES.decrypt(passwordEntity.getUsername(), secret));
+        decryptedPasswordEntity.setPassword(AES.decrypt(passwordEntity.getPassword(), secret));
+        decryptedPasswordEntity.setEmail(AES.decrypt(passwordEntity.getEmail(), secret));
+        decryptedPasswordEntity.setDescription(AES.decrypt(passwordEntity.getDescription(), secret));
+        decryptedPasswordEntity.setUser(passwordEntity.getUser());
+        decryptedPasswordEntity.setId(passwordEntity.getId());
+
+        return decryptedPasswordEntity;
     }
 }
