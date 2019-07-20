@@ -7,10 +7,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -52,12 +52,14 @@ public class PasswordControllerTest {
     }
 
     @Test
+    @WithMockUser
     public void listPasswords_HttpStatusShouldOk() throws Exception {
         mockMvc.perform(get(BASE_URL + "/list").param("username", "username"))
                 .andExpect(status().isOk());
     }
 
     @Test
+    @WithMockUser
     public void savePassword_HttpStatusShouldOk() throws Exception {
         PasswordEntity passwordEntity = createPassword();
         mockMvc.perform(post(BASE_URL + "/save")
@@ -68,6 +70,7 @@ public class PasswordControllerTest {
     }
 
     @Test
+    @WithMockUser
     public void updatePassword_HttpStatusShouldOk() throws Exception {
         PasswordEntity passwordEntity = createPassword();
         passwordEntity.setId("id");
@@ -78,6 +81,7 @@ public class PasswordControllerTest {
     }
 
     @Test
+    @WithMockUser
     public void deletePassword_HttpStatusShouldOk() throws Exception {
         PasswordEntity passwordEntity = createPassword();
         passwordEntity.setId("id");
