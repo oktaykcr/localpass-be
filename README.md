@@ -3,7 +3,7 @@
 ### Description
 **Localpass** is a web application that you can manage your credentials in a secure solution. 
 Every fields of password is encrypted.
-The project consist of two side. The backend side is written with Java Spring Boot, frontend side is written with vueJs.
+The project consist of two side. The backend side is written with Java Spring Boot, the [frontend](https://github.com/oktaykcr/localpass-fe) side is written with vueJs.
 
 > Technologies & Frameworks
 * Backend
