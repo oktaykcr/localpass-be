@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/oktaykcr/localpass-be.svg?style=svg)](https://circleci.com/gh/oktaykcr/localpass-be)
+
 # Localpass Backend
 
 ### Description
